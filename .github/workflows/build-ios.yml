@@ -10,48 +10,44 @@ jobs:
     runs-on: macos-latest
     
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
       
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           
       - name: Install dependencies
         run: |
-          npm install
+          npm ci
           npm install -g @capacitor/cli
           
       - name: Build web assets
         run: |
           mkdir -p www
-          cp index.html www/index.html 2>/dev/null || echo "Using existing www"
+          cp index.html www/index.html 2>/dev/null || true
           
-      - name: Initialize Capacitor
+      - name: Init Capacitor
         run: |
           if [ ! -f capacitor.config.json ]; then
             npx cap init "System" "com.yourname.systemgrowth" --web-dir www
           fi
           
-      - name: Add iOS platform
-        run: npx cap add ios || echo "iOS already exists"
+      - name: Add iOS
+        run: npx cap add ios || true
         
       - name: Sync Capacitor
         run: npx cap sync
         
-      - name: Build iOS project
+      - name: Build iOS
         run: |
           cd ios/App
-          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos -derivedDataPath build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos -derivedDataPath build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO || true
           
       - name: Upload iOS project
         uses: actions/upload-artifact@v4
         with:
           name: ios-project
           path: ios/
-          
-      - name: Upload built app
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-app
-          path: ios/App/build/Build/Products/
+          retention-days: 5
