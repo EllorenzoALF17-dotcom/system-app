@@ -1,0 +1,58 @@
+name: Build iOS App
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies
+      run: |
+        npm install
+        npm install -g @capacitor/cli
+        
+    - name: Build web assets
+      run: |
+        mkdir -p www
+        # Copy your index.html to www folder
+        cp index.html www/ 2>/dev/null || echo "Using existing www"
+        
+    - name: Initialize Capacitor (if needed)
+      run: |
+        if [ ! -f capacitor.config.json ]; then
+          npx cap init "System" "com.yourname.systemgrowth" --web-dir www
+        fi
+        
+    - name: Add iOS platform
+      run: npx cap add ios || echo "iOS already exists"
+      
+    - name: Sync Capacitor
+      run: npx cap sync
+      
+    - name: Build iOS project
+      run: |
+        cd ios/App
+        xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos -derivedDataPath build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+        
+    - name: Upload iOS project
+      uses: actions/upload-artifact@v3
+      with:
+        name: ios-project
+        path: ios/
+        
+    - name: Upload built app
+      uses: actions/upload-artifact@v3
+      with:
+        name: ios-app
+        path: ios/App/build/Build/Products/

@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#01040b">
+    <title>System</title>
+    <style>
+        :root {
+            --bg0: #01040b;
+            --bg1: #03101f;
+            --bg2: #07192c;
+            --cyan: #4fdcff;
+            --cyan-2: #8ef3ff;
+            --line: rgba(90, 230, 255, 0.35);
+            --panel: rgba(4, 16, 30, 0.62);
+            --panel-strong: rgba(7, 24, 44, 0.82);
+            --text: #dffaff;
+            --muted: #83bfd0;
+            --danger: #ff7474;
+            --safe-top: env(safe-area-inset-top);
+            --safe-bottom: env(safe-area-inset-bottom);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        html, body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg0);
+            color: var(--text);
+            overflow-x: hidden;
+            padding-top: var(--safe-top);
+            padding-bottom: var(--safe-bottom);
+        }
+
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            background-image: 
+                linear-gradient(rgba(100, 225, 255, 0.07) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(100, 225, 255, 0.07) 1px, transparent 1px);
+            background-size: 44px 44px;
+            mask-image: radial-gradient(circle at center, black 35%, transparent 88%);
+            animation: gridFloat 18s linear infinite;
+        }
+
+        @keyframes gridFloat { from { transform: translateY(0); } to { transform: translateY(44px); } }
+
+        .app {
+            position: relative;
+            z-index: 3;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 20px 16px calc(20px + var(--safe-bottom));
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-top: 10px;
+        }
+
+        .header h1 { 
+            margin: 0; 
+            font-size: 36px; 
+            letter-spacing: 8px; 
+            text-transform: uppercase;
+            background: linear-gradient(180deg, #fff, var(--cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p { 
+            margin: 8px 0 0; 
+            color: var(--muted); 
+            text-transform: uppercase; 
+            letter-spacing: 3px; 
+            font-size: 11px; 
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        @media (min-width: 768px) {
+            .main-grid { grid-template-columns: 1.1fr 0.9fr; }
+            .header h1 { font-size: 52px; }
+        }
+
+        .panel {
+            position: relative;
+            background: linear-gradient(180deg, rgba(5, 17, 31, 0.9), rgba(5, 17, 31, 0.7));
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 16px;
+            backdrop-filter: blur(12px);
+            overflow: hidden;
+        }
+
+        .panel::before, .panel::after {
+            content: "";
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-color: var(--cyan-2);
+            opacity: 0.8;
+        }
+
+        .panel::before { 
+            top: 8px; 
+            left: 8px; 
+            border-top: 2px solid var(--cyan-2); 
+            border-left: 2px solid var(--cyan-2); 
+        }
+        .panel::after { 
+            right: 8px; 
+            bottom: 8px; 
+            border-right: 2px solid var(--cyan-2); 
+            border-bottom: 2px solid var(--cyan-2); 
+        }
+
+        .panel h2 { 
+            margin: 0 0 12px; 
+            color: var(--cyan-2); 
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            font-size: 14px; 
+        }
+
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 8px; 
+        }
+
+        @media (min-width: 400px) {
+            .stats-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        .stat-card {
+            background: linear-gradient(180deg, rgba(7, 25, 45, 0.9), rgba(5, 18, 31, 0.8));
+            border: 1px solid rgba(115, 236, 255, 0.2);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-card .label { 
+            font-size: 10px; 
+            text-transform: uppercase; 
+            color: var(--muted); 
+            margin-bottom: 4px;
+            letter-spacing: 1px;
+        }
+
+        .stat-card .value { 
+            font-size: 24px; 
+            font-weight: bold; 
+            color: white;
+            text-shadow: 0 0 12px rgba(120, 240, 255, 0.4);
+        }
+
+        .xp-wrap { margin-top: 12px; }
+        .xp-top { 
+            display: flex; 
+            justify-content: space-between; 
+            margin-bottom: 6px; 
+            font-size: 11px; 
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+
+        .xp-shell, .bar-shell {
+            position: relative;
+            width: 100%;
+            height: 12px;
+            border-radius: 999px;
+            background: rgba(10, 25, 40, 0.95);
+            border: 1px solid rgba(89, 223, 255, 0.15);
+            overflow: hidden;
+        }
+
+        .xp-fill, .bar-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #38c8ff, #b4fbff);
+            box-shadow: 0 0 12px rgba(90, 235, 255, 0.4);
+            transition: width 0.5s ease;
+        }
+
+        .attributes { display: grid; gap: 10px; }
+        .bar-row .top { 
+            display: flex; 
+            justify-content: space-between; 
+            margin-bottom: 4px; 
+            font-size: 12px; 
+        }
+
+        .quest-section { margin-bottom: 12px; }
+        .quest-section:last-child { margin-bottom: 0; }
+        .quest-section-title { 
+            color: var(--cyan-2); 
+            font-size: 11px; 
+            letter-spacing: 2px; 
+            text-transform: uppercase; 
+            margin-bottom: 6px;
+            opacity: 0.8;
+        }
+
+        .quest {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 8px;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(88, 205, 255, 0.1);
+        }
+
+        .quest:last-child { border-bottom: none; }
+        .quest.done { opacity: 0.4; }
+        .quest-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+        .quest-reward { font-size: 11px; color: var(--muted); }
+        .quest-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(110, 235, 255, 0.3);
+            font-size: 9px;
+            color: var(--cyan-2);
+            background: rgba(79, 220, 255, 0.08);
+            margin-top: 4px;
+        }
+
+        button {
+            appearance: none;
+            border: 1px solid rgba(115, 236, 255, 0.4);
+            background: linear-gradient(180deg, rgba(48, 174, 255, 0.2), rgba(23, 83, 168, 0.3));
+            color: #ebfdff;
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        button:active { 
+            transform: scale(0.96); 
+            opacity: 0.8;
+        }
+
+        button:disabled { opacity: 0.4; cursor: not-allowed; }
+        button.danger { 
+            border-color: rgba(255, 120, 120, 0.4); 
+            background: linear-gradient(180deg, rgba(255, 60, 60, 0.15), rgba(120, 20, 20, 0.25)); 
+        }
+
+        .subtle { color: var(--muted); font-size: 12px; margin-bottom: 10px; line-height: 1.4; }
+        
+        textarea, input {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid rgba(96, 221, 255, 0.25);
+            background: rgba(1, 11, 20, 0.95);
+            color: var(--text);
+            padding: 12px;
+            font-size: 14px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        textarea { min-height: 100px; resize: none; }
+        input { height: 44px; }
+
+        .actions { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 8px; 
+            margin-top: 12px; 
+        }
+
+        .result-grid { 
+            display: grid; 
+            grid-template-columns: 1fr; 
+            gap: 12px; 
+            margin-top: 12px; 
+        }
+
+        @media (min-width: 768px) {
+            .result-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .delete-box {
+            display: none;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(88, 205, 255, 0.15);
+        }
+
+        .status-line { min-height: 20px; margin-top: 8px; color: var(--cyan-2); font-size: 12px; }
+        
+        .error-box {
+            display: none;
+            margin-bottom: 12px;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 120, 120, 0.4);
+            background: rgba(80, 10, 10, 0.3);
+            color: #ffd3d3;
+            font-size: 13px;
+        }
+
+        .system-overlay {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            z-index: 50;
+            padding: 20px;
+        }
+
+        .system-popup {
+            width: 100%;
+            max-width: 300px;
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid rgba(140, 245, 255, 0.6);
+            background: linear-gradient(180deg, rgba(7, 24, 44, 0.95), rgba(2, 11, 22, 0.9));
+            text-align: center;
+            animation: popupIn 0.3s ease;
+        }
+
+        @keyframes popupIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .system-popup .popup-label { 
+            font-size: 10px; 
+            letter-spacing: 3px; 
+            text-transform: uppercase; 
+            color: var(--muted); 
+            margin-bottom: 6px; 
+        }
+        .system-popup .popup-title { 
+            font-size: 24px; 
+            font-weight: bold; 
+            letter-spacing: 3px; 
+            color: white;
+            text-transform: uppercase;
+        }
+        .system-popup .popup-sub { 
+            margin-top: 6px; 
+            color: var(--cyan-2); 
+            font-size: 13px; 
+        }
+
+        .toast-stack {
+            position: fixed;
+            top: calc(10px + var(--safe-top));
+            right: 10px;
+            left: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 55;
+            pointer-events: none;
+        }
+
+        @media (min-width: 400px) {
+            .toast-stack { left: auto; width: 300px; }
+        }
+
+        .toast {
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(140, 245, 255, 0.4);
+            background: linear-gradient(180deg, rgba(7, 24, 44, 0.95), rgba(2, 11, 22, 0.9));
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .toast-title { 
+            font-size: 10px; 
+            letter-spacing: 2px; 
+            text-transform: uppercase; 
+            color: var(--cyan-2); 
+            margin-bottom: 2px;
+        }
+        .toast-text { font-size: 13px; color: white; }
+
+        #learningQuestOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: var(--bg0);
+            z-index: 9999;
+            flex-direction: column;
+            padding: calc(10px + var(--safe-top)) 16px calc(16px + var(--safe-bottom));
+        }
+
+        .learning-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        @media (min-width: 768px) {
+            .learning-container { flex-direction: row; }
+        }
+
+        .side-panel {
+            background: var(--panel);
+            border-radius: 12px;
+            padding: 12px;
+            border: 1px solid rgba(90, 230, 255, 0.2);
+        }
+
+        @media (min-width: 768px) {
+            .side-panel { 
+                flex: 1; 
+                max-width: 250px;
+            }
+        }
+
+        .side-panel h3 { 
+            margin: 0 0 8px 0; 
+            color: var(--cyan-2); 
+            font-size: 12px; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .panel-content { 
+            font-size: 12px; 
+            color: var(--muted); 
+            line-height: 1.5;
+        }
+
+        .center-panel {
+            flex: 2;
+            background: var(--panel-strong);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            border: 1px solid rgba(90, 230, 255, 0.25);
+        }
+
+        .center-panel h2 { 
+            text-align: center; 
+            color: var(--cyan-2); 
+            margin: 0; 
+            font-size: 18px;
+            letter-spacing: 2px;
+        }
+
+        #aiLearningOutput {
+            flex: 1;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 12px;
+            border: 1px solid rgba(90, 230, 255, 0.15);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .exit-btn-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 8px;
+        }
+
+        ul { margin: 0; padding-left: 18px; }
+        li { margin-bottom: 6px; font-size: 13px; }
+
+        @supports (-webkit-touch-callout: none) {
+            button { padding: 12px 16px; }
+            .quest { padding: 12px 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+
+    <div class="app">
+        <div class="header">
+            <h1>SYSTEM</h1>
+            <p>Player Growth Interface</p>
+        </div>
+
+        <div id="errorBox" class="error-box"></div>
+
+        <div class="main-grid">
+            <div class="panel">
+                <h2>Hunter Status</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="label">XP</div>
+                        <div class="value" id="xp">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">Level</div>
+                        <div class="value" id="level">1</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">Rank</div>
+                        <div class="value" id="rank">E</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">Streak</div>
+                        <div class="value" id="streak">0</div>
+                    </div>
+                </div>
+                <div class="xp-wrap">
+                    <div class="xp-top">
+                        <span>Progress</span>
+                        <span id="xpProgressText">0 / 100</span>
+                    </div>
+                    <div class="xp-shell">
+                        <div class="xp-fill" id="xpFill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>Attributes</h2>
+                <div class="attributes">
+                    <div class="bar-row">
+                        <div class="top"><span>Strength</span><span id="strengthText">0</span></div>
+                        <div class="bar-shell"><div class="bar-fill" id="strengthBar"></div></div>
+                    </div>
+                    <div class="bar-row">
+                        <div class="top"><span>Discipline</span><span id="disciplineText">0</span></div>
+                        <div class="bar-shell"><div class="bar-fill" id="disciplineBar"></div></div>
+                    </div>
+                    <div class="bar-row">
+                        <div class="top"><span>Knowledge</span><span id="knowledgeText">0</span></div>
+                        <div class="bar-shell"><div class="bar-fill" id="knowledgeBar"></div></div>
+                    </div>
+                    <div class="bar-row">
+                        <div class="top"><span>Money</span><span id="moneyText">0</span></div>
+                        <div class="bar-shell"><div class="bar-fill" id="moneyBar"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Daily Quests</h2>
+            <div id="quests"></div>
+            <div class="actions">
+                <button onclick="Game.resetDailies()">Reset</button>
+                <button onclick="Game.addCustomXP()">+10 XP</button>
+            </div>
+            <div class="delete-box" id="deleteBox">
+                <h2 style="font-size: 14px; margin: 0 0 8px; color: var(--cyan-2);">Delete Request</h2>
+                <div class="subtle">Why should this quest be removed?</div>
+                <input id="deleteReason" placeholder="I injured my shoulder..." />
+                <div class="actions">
+                    <button class="danger" onclick="Game.submitDeleteRequest()">Submit</button>
+                    <button onclick="Game.cancelDeleteRequest()">Cancel</button>
+                </div>
+                <div class="status-line" id="deleteStatus"></div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>AI Planner</h2>
+            <div class="subtle">Describe your goals. The system will generate quests.</div>
+            <textarea id="userInput" placeholder="I want to get fit, learn coding, and build better habits..."></textarea>
+            <div class="actions">
+                <button onclick="AIPlanner.generate()">Generate Plan</button>
+                <button onclick="LearningQuest.open()">Learning Mode</button>
+            </div>
+            <div class="status-line" id="plannerStatus"></div>
+        </div>
+
+        <div class="result-grid" id="result"></div>
+    </div>
+
+    <div id="systemOverlay" class="system-overlay"></div>
+
+    <div id="learningQuestOverlay">
+        <div class="exit-btn-container">
+            <button onclick="LearningQuest.close()">Exit</button>
+        </div>
+        <div class="learning-container">
+            <div class="side-panel" id="leftPanel">
+                <h3>Feed</h3>
+                <div id="leftPanelContent" class="panel-content">Initializing...</div>
+            </div>
+            <div class="center-panel">
+                <h2>Learning Quest</h2>
+                <textarea id="aiLearningInput" placeholder="What do you want to learn?" style="min-height: 60px;"></textarea>
+                <div class="actions" style="justify-content: center; margin: 0;">
+                    <button onclick="LearningQuest.start()">Start Learning</button>
+                </div>
+                <div id="aiLearningOutput"></div>
+            </div>
+            <div class="side-panel" id="rightPanel">
+                <h3>Insights</h3>
+                <div id="rightPanelContent" class="panel-content">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastStack" class="toast-stack"></div>
+
+    <script>
+        const UI = {
+            elements: {},
+            
+            cache() {
+                this.elements = {
+                    xp: document.getElementById('xp'),
+                    level: document.getElementById('level'),
+                    rank: document.getElementById('rank'),
+                    streak: document.getElementById('streak'),
+                    xpProgressText: document.getElementById('xpProgressText'),
+                    xpFill: document.getElementById('xpFill'),
+                    strengthText: document.getElementById('strengthText'),
+                    strengthBar: document.getElementById('strengthBar'),
+                    disciplineText: document.getElementById('disciplineText'),
+                    disciplineBar: document.getElementById('disciplineBar'),
+                    knowledgeText: document.getElementById('knowledgeText'),
+                    knowledgeBar: document.getElementById('knowledgeBar'),
+                    moneyText: document.getElementById('moneyText'),
+                    moneyBar: document.getElementById('moneyBar'),
+                    quests: document.getElementById('quests'),
+                    deleteBox: document.getElementById('deleteBox'),
+                    deleteReason: document.getElementById('deleteReason'),
+                    deleteStatus: document.getElementById('deleteStatus'),
+                    userInput: document.getElementById('userInput'),
+                    plannerStatus: document.getElementById('plannerStatus'),
+                    result: document.getElementById('result'),
+                    systemOverlay: document.getElementById('systemOverlay'),
+                    toastStack: document.getElementById('toastStack'),
+                    errorBox: document.getElementById('errorBox'),
+                    learningOverlay: document.getElementById('learningQuestOverlay'),
+                    aiLearningInput: document.getElementById('aiLearningInput'),
+                    aiLearningOutput: document.getElementById('aiLearningOutput'),
+                    leftPanelContent: document.getElementById('leftPanelContent'),
+                    rightPanelContent: document.getElementById('rightPanelContent')
+                };
+            },
+
+            showError(msg) {
+                const box = this.elements.errorBox;
+                box.textContent = msg;
+                box.style.display = 'block';
+                setTimeout(() => box.style.display = 'none', 4000);
+            },
+
+            popup(title, sub) {
+                const el = document.createElement('div');
+                el.className = 'system-popup';
+                el.innerHTML = `
+                    <div class="popup-label">System</div>
+                    <div class="popup-title">${this.escape(title)}</div>
+                    <div class="popup-sub">${this.escape(sub || '')}</div>
+                `;
+                this.elements.systemOverlay.appendChild(el);
+                setTimeout(() => el.remove(), 2000);
+            },
+
+            toast(title, text) {
+                const el = document.createElement('div');
+                el.className = 'toast';
+                el.innerHTML = `
+                    <div class="toast-title">${this.escape(title)}</div>
+                    <div class="toast-text">${this.escape(text)}</div>
+                `;
+                this.elements.toastStack.appendChild(el);
+                setTimeout(() => el.remove(), 3000);
+            },
+
+            escape(str) {
+                const div = document.createElement('div');
+                div.textContent = str || '';
+                return div.innerHTML;
+            },
+
+            setBar(id, val) {
+                const el = document.getElementById(id);
+                if (el) el.style.width = Math.min((val / 100) * 100, 100) + '%';
+            },
+
+            updateXP(p) {
+                let before = 0;
+                for (let i = 1; i < p.level; i++) before += i * 100;
+                const need = p.level * 100;
+                const cur = Math.max(0, p.xp - before);
+                this.elements.xpProgressText.textContent = `${cur} / ${need}`;
+                this.elements.xpFill.style.width = `${Math.min((cur / need) * 100, 100)}%`;
+            },
+
+            rank(level) {
+                const ranks = ['E', 'D', 'C', 'B', 'A', 'S'];
+                return ranks[Math.min(Math.floor((level - 1) / 10), 5)];
+            },
+
+            renderQuests(base, ai) {
+                const render = (title, list, tag) => {
+                    if (!list?.length) return `<div class="quest-section">
+                        <div class="quest-section-title">${title}</div>
+                        <div class="subtle">No quests</div>
+                    </div>`;
+                    
+                    let html = `<div class="quest-section"><div class="quest-section-title">${title}</div>`;
+                    list.forEach(q => {
+                        const rew = Object.entries(q.statRewards || {})
+                            .filter(([_, v]) => v > 0)
+                            .map(([k, v]) => `+${v} ${k}`)
+                            .join(' | ');
+                        
+                        html += `
+                            <div class="quest ${q.completed ? 'done' : ''}">
+                                <div>
+                                    <div class="quest-title">${this.escape(q.title)}</div>
+                                    <div class="quest-reward">+${q.xp} XP${rew ? ` | ${this.escape(rew)}` : ''}</div>
+                                    <div class="quest-tag">${tag}</div>
+                                </div>
+                                <button ${q.completed ? 'disabled' : ''} onclick="Game.complete('${q.id}')">
+                                    ${q.completed ? 'Done' : 'Complete'}
+                                </button>
+                                <button class="danger" onclick="Game.askDelete('${q.id}')">×</button>
+                            </div>
+                        `;
+                    });
+                    return html + '</div>';
+                };
+                
+                this.elements.quests.innerHTML = render('Daily', base, 'DAILY') + render('AI', ai, 'AI');
+            },
+
+            showDelete(show) {
+                this.elements.deleteBox.style.display = show ? 'block' : 'none';
+                if (show) {
+                    this.elements.deleteReason.value = '';
+                    this.elements.deleteStatus.textContent = '';
+                    this.elements.deleteReason.focus();
+                }
+            },
+
+            planStatus(msg) {
+                this.elements.plannerStatus.textContent = msg;
+            },
+
+            renderPlan(plan) {
+                const list = (items) => items?.length ? `<ul>${items.map(i => `<li>${this.escape(i)}</li>`).join('')}</ul>` : '<p>None</p>';
+                const panel = (t, c) => `<div class="panel"><h2>${this.escape(t)}</h2>${c}</div>`;
+                
+                const quests = (plan.aiQuests || []).map(q => 
+                    `<li>${this.escape(q.title)} (+${q.xp} XP)</li>`
+                ).join('');
+                
+                this.elements.result.innerHTML = 
+                    panel('Goal', `<p>${this.escape(plan.main_goal)}</p>`) +
+                    panel('Urgent', list(plan.urgent_tasks)) +
+                    panel('Steps', list(plan.next_steps)) +
+                    panel('Habits', list(plan.habits)) +
+                    panel('Warnings', list(plan.warnings)) +
+                    panel('Quests', `<ul>${quests}</ul>`);
+            },
+
+            typeWriter(el, html) {
+                el.innerHTML = '';
+                let i = 0;
+                const type = () => {
+                    if (i < html.length) {
+                        if (html[i] === '<') {
+                            const end = html.indexOf('>', i);
+                            el.innerHTML += html.substring(i, end + 1);
+                            i = end + 1;
+                        } else {
+                            el.innerHTML += html[i++];
+                        }
+                        setTimeout(type, 10);
+                    }
+                };
+                type();
+            }
+        };
+
+        const API = {
+            async req(url, opts = {}) {
+                const res = await fetch(url, {
+                    headers: { 'Content-Type': 'application/json' },
+                    ...opts
+                });
+                return await res.json();
+            },
+            
+            getData() { return this.req('/api/game-data'); },
+            complete(id) { return this.req('/api/complete-quest', { method: 'POST', body: JSON.stringify({ questId: id }) }); },
+            reset() { return this.req('/api/reset-dailies', { method: 'POST' }); },
+            addXP(amt) { return this.req('/api/add-xp', { method: 'POST', body: JSON.stringify({ amount: amt }) }); },
+            deleteReq(id, reason) { 
+                return this.req('/api/delete-quest-request', { 
+                    method: 'POST', 
+                    body: JSON.stringify({ questId: id, reason }) 
+                }); 
+            },
+            plan(text) { return this.req('/api/plan', { method: 'POST', body: JSON.stringify({ text }) }); },
+            logLearning(data) { return this.req('/api/teacher-button', { method: 'POST', body: JSON.stringify(data) }); }
+        };
+
+        const Game = {
+            data: null,
+            deleteId: null,
+
+            async init() {
+                UI.cache();
+                await this.load();
+            },
+
+            async load() {
+                try {
+                    this.data = await API.getData();
+                    UI.updateXP(this.data.player);
+                    UI.elements.xp.textContent = this.data.player.xp;
+                    UI.elements.level.textContent = this.data.player.level;
+                    UI.elements.rank.textContent = UI.rank(this.data.player.level);
+                    UI.elements.streak.textContent = this.data.player.streak;
+                    
+                    const s = this.data.player.stats;
+                    UI.elements.strengthText.textContent = s.strength;
+                    UI.elements.disciplineText.textContent = s.discipline;
+                    UI.elements.knowledgeText.textContent = s.knowledge;
+                    UI.elements.moneyText.textContent = s.money;
+                    
+                    UI.setBar('strengthBar', s.strength);
+                    UI.setBar('disciplineBar', s.discipline);
+                    UI.setBar('knowledgeBar', s.knowledge);
+                    UI.setBar('moneyBar', s.money);
+                    
+                    UI.renderQuests(this.data.baseQuests, this.data.aiQuests);
+                } catch (err) {
+                    UI.showError('Load failed: ' + err.message);
+                }
+            },
+
+            async complete(id) {
+                try {
+                    await API.complete(id);
+                    UI.popup('QUEST COMPLETE', 'Rewards granted');
+                    UI.toast('Completed', 'XP and stats increased');
+                    await this.load();
+                } catch (err) {
+                    UI.showError('Complete failed: ' + err.message);
+                }
+            },
+
+            async resetDailies() {
+                try {
+                    await API.reset();
+                    UI.toast('Reset', 'Daily quests refreshed');
+                    await this.load();
+                } catch (err) {
+                    UI.showError('Reset failed: ' + err.message);
+                }
+            },
+
+            async addCustomXP() {
+                try {
+                    await API.addXP(10);
+                    UI.toast('XP Added', '+10 XP');
+                    await this.load();
+                } catch (err) {
+                    UI.showError('Add XP failed: ' + err.message);
+                }
+            },
+
+            askDelete(id) {
+                this.deleteId = id;
+                UI.showDelete(true);
+            },
+
+            cancelDeleteRequest() {
+                this.deleteId = null;
+                UI.showDelete(false);
+            },
+
+            async submitDeleteRequest() {
+                const reason = UI.elements.deleteReason.value.trim();
+                if (!this.deleteId) return UI.elements.deleteStatus.textContent = 'No quest selected';
+                if (!reason) return UI.elements.deleteStatus.textContent = 'Enter reason';
+                
+                UI.elements.deleteStatus.textContent = 'Evaluating...';
+                
+                try {
+                    const res = await API.deleteReq(this.deleteId, reason);
+                    UI.elements.deleteStatus.textContent = res.message;
+                    
+                    if (res.approved) {
+                        UI.popup('APPROVED', 'Quest removed');
+                        UI.toast('Deleted', 'Request accepted');
+                        await this.load();
+                        setTimeout(() => this.cancelDeleteRequest(), 1000);
+                    } else {
+                        UI.popup('DENIED', 'Quest remains active');
+                    }
+                } catch (err) {
+                    UI.elements.deleteStatus.textContent = 'Error: ' + err.message;
+                }
+            }
+        };
+
+        const AIPlanner = {
+            async generate() {
+                const text = UI.elements.userInput.value.trim();
+                if (!text) return UI.planStatus('Enter your goals first');
+                
+                UI.planStatus('Analyzing...');
+                UI.elements.result.innerHTML = '<div class="panel"><h2>Processing</h2><p>Analyzing input...</p></div>';
+                
+                try {
+                    const plan = await API.plan(text);
+                    UI.planStatus('Plan generated!');
+                    UI.popup('PLAN CREATED', 'New quests available');
+                    UI.toast('AI Ready', 'Check your new quests');
+                    UI.renderPlan(plan);
+                    await Game.load();
+                } catch (err) {
+                    UI.planStatus('Error: ' + err.message);
+                }
+            }
+        };
+
+        const LearningQuest = {
+            leftIdx: 0,
+            rightIdx: 0,
+            interval: null,
+
+            open() {
+                UI.elements.learningOverlay.style.display = 'flex';
+                this.start();
+            },
+
+            close() {
+                UI.elements.learningOverlay.style.display = 'none';
+                this.stop();
+            },
+
+            start() {
+                this.rotate();
+                this.interval = setInterval(() => this.rotate(), 2500);
+            },
+
+            stop() {
+                clearInterval(this.interval);
+            },
+
+            rotate() {
+                if (!Game.data) return;
+                const l = Game.data.panelItems?.left || ['Loading...'];
+                const r = Game.data.panelItems?.right || ['Loading...'];
+                UI.elements.leftPanelContent.textContent = l[this.leftIdx % l.length];
+                UI.elements.rightPanelContent.textContent = r[this.rightIdx % r.length];
+                this.leftIdx++;
+                this.rightIdx++;
+            },
+
+            async start() {
+                const input = UI.elements.aiLearningInput.value.trim();
+                const out = UI.elements.aiLearningOutput;
+                
+                if (!input) return out.innerHTML = '<p style="color: var(--danger)">Enter a topic</p>';
+                
+                out.innerHTML = '<p style="color: var(--cyan)">Analyzing...</p>';
+                
+                try {
+                    await API.logLearning({ id: Date.now(), topic: input });
+                } catch (e) {}
+
+                const templates = [
+                    `<strong>Quest: ${UI.escape(input)}</strong><br><br>
+                    <b>Phase 1:</b> Deconstruct skill<br>
+                    <b>Phase 2:</b> Learn enough to self-correct<br>
+                    <b>Phase 3:</b> Remove barriers<br>
+                    <b>Phase 4:</b> Practice 20 hours<br><br>
+                    <b>Reward:</b> +25 XP | +5 Knowledge`,
+                    
+                    `<strong>Protocol: ${UI.escape(input)}</strong><br><br>
+                    <b>Foundation:</b> Core principles<br>
+                    <b>Application:</b> Build in 48h<br>
+                    <b>Iteration:</b> Feedback loop<br>
+                    <b>Integration:</b> Connect knowledge<br><br>
+                    <b>Reward:</b> +25 XP | +5 Knowledge`
+                ];
+                
+                const plan = templates[Math.floor(Math.random() * templates.length)];
+                UI.typeWriter(out, plan);
+                
+                setTimeout(async () => {
+                    await API.addXP(25);
+                    UI.toast('Complete!', '+25 XP | +5 Knowledge');
+                    UI.popup('KNOWLEDGE UP', 'Neural pathways strengthened');
+                    await Game.load();
+                }, 1500);
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => Game.init());
+    </script>
+</body>
+</html>
