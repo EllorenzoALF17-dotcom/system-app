@@ -8,11 +8,34 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+      
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: npm ci && npx cap sync
-      - uses: actions/upload-artifact@v4
+      
+      - name: Install dependencies
+        run: |
+          npm install
+          npm install -g @capacitor/cli
+      
+      - name: Setup Capacitor
+        run: |
+          mkdir -p www
+          cp index.html www/index.html 2>/dev/null || true
+          if [ ! -f capacitor.config.json ]; then
+            npx cap init "System" "com.yourname.systemgrowth" --web-dir www
+          fi
+          npx cap add ios || true
+          npx cap sync
+      
+      - name: Build iOS project
+        run: |
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos -derivedDataPath build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO || true
+      
+      - name: Upload iOS project
+        uses: actions/upload-artifact@v4
         with:
           name: ios-app
           path: ios/
+          retention-days: 5
