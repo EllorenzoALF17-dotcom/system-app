@@ -11,27 +11,39 @@ jobs:
       
       - uses: actions/setup-node@v4
         with:
-          node-version: '24'  # Updated to v24
+          node-version: '24'
       
       - name: Install dependencies
         run: |
           npm install
           npm install -g @capacitor/cli
       
-      - name: Setup Capacitor
+      - name: Setup web assets
         run: |
           mkdir -p www
           cp index.html www/index.html 2>/dev/null || true
+      
+      - name: Initialize Capacitor config
+        run: |
           if [ ! -f capacitor.config.json ]; then
             npx cap init "System" "com.yourname.systemgrowth" --web-dir www
           fi
-          npx cap add ios || true
-          npx cap sync
+      
+      - name: Add iOS platform
+        run: npx cap add ios
+      
+      - name: Sync Capacitor
+        run: npx cap sync
+      
+      - name: Verify iOS folder exists
+        run: |
+          ls -la ios/
+          ls -la ios/App/
       
       - name: Build iOS project
         run: |
           cd ios/App
-          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos -derivedDataPath build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO || true
+          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos -derivedDataPath build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
       
       - name: Upload iOS project
         uses: actions/upload-artifact@v4
@@ -39,3 +51,4 @@ jobs:
           name: ios-app
           path: ios/
           retention-days: 5
+          if-no-files-found: error
